@@ -1,0 +1,108 @@
+#!/bin/sh
+
+tmpdir=/tmp
+trackprefix="$HOME/.local"
+
+[ -e "$HOME/.hpmrc" ] && source "$HOME/.hpmrc"
+
+myname=$(basename $0)
+
+function usage() {
+  echo "Usage:"
+  echo "  $myname install <packagename> <command>"
+  echo "  $myname uninstall <packagename>"
+  exit 1
+}
+
+function init() {
+  if [ "x$XDG_DATA_HOME" == x ]; then
+    XDG_DATA_HOME=$HOME/.local/share
+  fi
+
+  HPM_DATA_HOME=$XDG_DATA_HOME/hpm
+
+  mkdir -p $HPM_DATA_HOME
+
+  HPM_WATCH="$(dirname $0)/hpmwatch"
+}
+
+function install() {
+  if [ $# -ne 3 ]; then
+    echo "Number of arguments invalid for install"
+    usage
+  fi
+
+  pkgname="$2"
+  instcmd="$3"
+
+  echo "Tracking installation of $pkgname..."
+
+  init
+
+  manifest="$HPM_DATA_HOME/$pkgname.manifest"
+  echo "Writing in $manifest"
+
+  if [ -e "$manifest" ]; then
+    echo "$pkgname is already installed, delete it first"
+    exit 1
+  fi
+
+  echo "Running $instcmd"
+
+  tmpfile=$(mktemp --tmpdir=$tmpdir hmptemp.XXXXXXXXXX)
+
+  $HPM_WATCH -o "$tmpfile" /bin/sh -c "$instcmd"
+  RET=$?
+
+  grep -F "$trackprefix" "$tmpfile" > "$manifest"
+
+  if [ $RET -eq 0 ]; then
+    echo "Installation successful"
+  else
+    echo "Installation seems to have failed"
+  fi
+
+  return $RET
+}
+
+function uninstall() {
+  if [ $# -ne 2 ]; then
+    echo "Number of arguments invalid for uninstall"
+    usage
+  fi
+
+  pkgname="$2"
+
+  echo "Uninstalling $pkgname..."
+
+  init
+
+  manifest="$HPM_DATA_HOME/$pkgname.manifest"
+  if [ ! -e "$manifest" ]; then
+    echo "$pkgname is not installed"
+    exit 1
+  fi
+
+  cat "$manifest" | xargs -d'\n' rm -f
+
+  rm -f "$manifest"
+}
+
+if [ $# -lt 1 ]; then
+  usage
+fi
+
+case $1 in
+  install)
+    install "$@"
+    exit $?
+    ;;
+  uninstall)
+    uninstall "$@"
+    exit $?
+    ;;
+  *)
+    echo "Unknown command: $1"
+    usage
+    ;;
+esac

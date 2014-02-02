@@ -1,0 +1,43 @@
+#!/bin/sh
+#$Id: installwatch,v 0.6.1.1 2001/06/25 05:29:45 izto Exp $
+
+LIBHPM=$(dirname $0)/libhpmwatch.so
+
+if test -z "$1" ; then
+  echo "Syntax: $0 [-o outfile] <program> <arguments>"
+  exit 1
+fi
+
+if test "$1" = "-o" ; then
+  shift
+  INSTALLWATCHFILE="$1"
+  if test -z "$INSTALLWATCHFILE" ; then
+    echo "Syntax: $0 [-o outfile] <program> <arguments>"
+    exit 1
+  fi
+
+  # If $INSTALLWATCHFILE is a relative path, it must become
+  # absolute
+  INSTALLWATCHFILE=$(realpath $INSTALLWATCHFILE)
+
+  export INSTALLWATCHFILE
+  if ! echo -n > "$INSTALLWATCHFILE" ; then
+    echo Unable to prepare $INSTALLWATCHFILE
+    exit 1
+  fi
+  shift
+fi
+
+if test -z "$*" ; then
+  echo "Syntax: $0 [-o outfile] <program> <arguments>"
+  exit 1
+fi
+
+if test -u $1 ; then
+  echo "Warning: $0 may not work with suid programs"
+fi
+
+LD_PRELOAD=$LIBHPM "$@"
+RET=$?
+
+exit $RET
