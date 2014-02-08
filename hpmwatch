@@ -1,7 +1,7 @@
 #!/bin/sh
 #$Id: installwatch,v 0.6.1.1 2001/06/25 05:29:45 izto Exp $
 
-LIBHPM=$(dirname $0)/libhpmwatch.so
+LIBHPM=$(dirname $0)/../lib/libhpmwatch.so
 
 if test -z "$1" ; then
   echo "Syntax: $0 [-o outfile] <program> <arguments>"
