@@ -49,7 +49,7 @@ function install() {
 
   echo "Running $instcmd"
 
-  tmpfile=$(mktemp --tmpdir=$tmpdir hmptemp.XXXXXXXXXX)
+  tmpfile=$(mktemp $tmpdir/hmptemp.XXXXXXXXXX)
 
   $HPM_WATCH -o "$tmpfile" /bin/sh -c "$instcmd"
   RET=$?
