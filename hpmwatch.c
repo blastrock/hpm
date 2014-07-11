@@ -49,7 +49,7 @@ static int(*true_open)(const char *, int, ...);
 static int(*true_rename)(const char *, const char *);
 static int(*true_symlink)(const char *, const char *);
 
-static int(*true_creat64)(const char *, __mode_t);
+static int(*true_creat64)(const char *, mode_t);
 static FILE *(*true_fopen64)(const char *,const char *);
 static int(*true_open64)(const char *, int, ...);
 
@@ -195,7 +195,7 @@ int symlink(const char *oldpath, const char *newpath) {
   return result;
 }
 
-int creat64(const char *pathname, __mode_t mode) {
+int creat64(const char *pathname, mode_t mode) {
   /* Is it a system call? */
   int result;
   char canonic[MAXPATHLEN];

@@ -4,19 +4,36 @@
 CFLAGS+=-D_GNU_SOURCE -DPIC -fPIC -D_REENTRANT 
 PREFIX=/usr/local
 DESTDIR=$(PREFIX)
+UNAME_S=$(shell uname -s)
 
 libhpmwatch.so: hpmwatch.o
-	$(LD) -shared -o libhpmwatch.so hpmwatch.o -ldl -lc -fPIC
+ifeq ($(UNAME_S),Darwin)
+	gcc -dynamiclib -o libhpmwatch.dylib hpmwatch.o
+else
+	$(LD) -shared -o libhpmwatch.so hpmwatch.o -ldl -lc -fpic
+endif
 
 .PHONY: clean
 clean:
+ifeq ($(UNAME_S),Darwin)
+	rm -f hpmwatch.o libhpmwatch.dylib
+else
 	rm -f hpmwatch.o libhpmwatch.so
+endif
 
 .PHONY: install
 install: libhpmwatch.so
+ifeq ($(UNAME_S),Darwin)
+	cp libhpmwatch.dylib $(DESTDIR)/lib
+else
 	cp libhpmwatch.so $(DESTDIR)/lib
+endif
 	cp hpm hpmwatch $(DESTDIR)/bin
 
 uninstall:
-	rm -f $(DESTDIR)/lib/libhpmwatch.so
+ifeq ($(UNAME_S),Darwin)
+	rm $(DESTDIR)/lib/libhpmwatch.dylib
+else
+	rm $(DESTDIR)/lib/libhpmwatch.so
+endif
 	rm -f $(DESTDIR)/bin/hpm $(DESTDIR)/bin/hpmwatch
