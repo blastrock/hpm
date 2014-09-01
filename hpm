@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 tmpdir=/tmp
 trackprefix="$HOME/.local"
 
@@ -7,15 +9,15 @@ trackprefix="$HOME/.local"
 
 myname=$(basename $0)
 
-function usage() {
+usage() {
   echo "Usage:"
   echo "  $myname install <packagename> <command>"
   echo "  $myname uninstall <packagename>"
   exit 1
 }
 
-function init() {
-  if [ "x$XDG_DATA_HOME" == x ]; then
+init() {
+  if [ "x$XDG_DATA_HOME" = x ]; then
     XDG_DATA_HOME=$HOME/.local/share
   fi
 
@@ -26,7 +28,7 @@ function init() {
   HPM_WATCH="$(dirname $0)/hpmwatch"
 }
 
-function install() {
+install() {
   if [ $# -ne 3 ]; then
     echo "Number of arguments invalid for install"
     usage
@@ -65,7 +67,7 @@ function install() {
   return $RET
 }
 
-function uninstall() {
+uninstall() {
   if [ $# -ne 2 ]; then
     echo "Number of arguments invalid for uninstall"
     usage

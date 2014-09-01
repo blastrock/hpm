@@ -1,6 +1,8 @@
 #!/bin/sh
 #$Id: installwatch,v 0.6.1.1 2001/06/25 05:29:45 izto Exp $
 
+set -e
+
 LIBHPM=$(dirname $0)/../lib/libhpmwatch.so
 
 if test -z "$1" ; then
@@ -34,7 +36,7 @@ if test "$1" = "-o" ; then
 
   # If $INSTALLWATCHFILE is a relative path, it must become
   # absolute
-  INSTALLWATCHFILE=$(realpath $INSTALLWATCHFILE)
+  INSTALLWATCHFILE=$(readlink -f $INSTALLWATCHFILE)
 
   export INSTALLWATCHFILE
   if ! echo -n > "$INSTALLWATCHFILE" ; then
