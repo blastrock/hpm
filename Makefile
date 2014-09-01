@@ -1,16 +1,17 @@
 # Makefile for hpm
 # $Id: Makefile,v 0.6.2.1 2001/12/13 23:59:58 izto Exp $
 
-CFLAGS+=-D_GNU_SOURCE -DPIC -fPIC -D_REENTRANT 
+CFLAGS+=-D_GNU_SOURCE -DPIC -fPIC -D_REENTRANT
+CXXFLAGS+=-D_GNU_SOURCE -DPIC -fPIC -D_REENTRANT -std=c++0x
 PREFIX=/usr/local
 DESTDIR=$(PREFIX)
 UNAME_S=$(shell uname -s)
 
 libhpmwatch.so: hpmwatch.o
 ifeq ($(UNAME_S),Darwin)
-	gcc -dynamiclib -o libhpmwatch.dylib hpmwatch.o
+	g++ -std=c++0x -dynamiclib -o libhpmwatch.dylib hpmwatch.o
 else
-	$(LD) -shared -o libhpmwatch.so hpmwatch.o -ldl -lc -fpic
+	$(CXX) -std=c++0x -shared -o libhpmwatch.so hpmwatch.o -ldl -lc -fPIC -lpthread
 endif
 
 .PHONY: clean

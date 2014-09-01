@@ -37,10 +37,13 @@
 #include <string.h>
 #include <time.h>
 #include <dlfcn.h>
+#include <mutex>
 
 #define BUFSIZE 4096
 
 #define error(X) (X < 0 ? strerror(errno) : "success")
+
+std::once_flag initialized;
 
 static int(*true_creat)(const char *, mode_t);
 static FILE *(*true_fopen)(const char *,const char*);
@@ -57,21 +60,36 @@ static void addfile(const char *filename);
 
 static int log_fd = -1;
 
-void _init(void) {
+int initialize_watch(void) {
   void *libc_handle;
 
   libc_handle = RTLD_NEXT;
 
-  true_creat = dlsym(libc_handle, "creat");
-  true_fopen = dlsym(libc_handle, "fopen");
-  true_link = dlsym(libc_handle, "link");
-  true_open = dlsym(libc_handle, "open");
-  true_rename = dlsym(libc_handle, "rename");
-  true_symlink = dlsym(libc_handle, "symlink");
 
-  true_creat64 = dlsym(libc_handle, "creat64");
-  true_fopen64 = dlsym(libc_handle, "fopen64");
-  true_open64 = dlsym(libc_handle, "open64");
+  true_creat = (int(*)(const char*, mode_t))dlsym(libc_handle, "creat");
+  true_fopen = (FILE*(*)(const char*, const char*))dlsym(libc_handle, "fopen");
+  true_link = (int(*)(const char*, const char*))dlsym(libc_handle, "link");
+  true_open = (int(*)(const char*, int, ...))dlsym(libc_handle, "open");
+  true_rename = (int(*)(const char*, const char*))dlsym(libc_handle, "rename");
+  true_symlink = (int(*)(const char*, const char*))dlsym(libc_handle, "symlink");
+
+  true_creat64 = (int(*)(const char*, __mode_t))dlsym(libc_handle, "creat64");
+  true_fopen64 = (FILE*(*)(const char*, const char*))dlsym(libc_handle, "fopen64");
+  true_open64 = (int(*)(const char*, int, ...))dlsym(libc_handle, "open64");
+
+  if (!true_creat ||
+      !true_fopen ||
+      !true_link ||
+      !true_open ||
+      !true_rename ||
+      !true_symlink ||
+      !true_creat64 ||
+      !true_fopen64 ||
+      !true_open64)
+  {
+    puts("Error: cannot load one of the symbols");
+    exit(-1);
+  }
 
   char* logname = getenv("INSTALLWATCHFILE");
   if (!logname)
@@ -86,6 +104,8 @@ void _init(void) {
     exit(-1);
   }
 }
+
+static int forceinit = initialize_watch();
 
 static void addfile(const char *filename) {
   char buffer[BUFSIZE];
@@ -113,6 +133,8 @@ static void canonicalize(const char *path, char *resolved_path) {
 }
 
 int creat(const char *pathname, mode_t mode) {
+  call_once(initialized, initialize_watch);
+
   /* Is it a system call? */
   int result;
   char canonic[MAXPATHLEN];
@@ -126,6 +148,8 @@ int creat(const char *pathname, mode_t mode) {
 }
 
 FILE *fopen(const char *pathname, const char *mode) {
+  call_once(initialized, initialize_watch);
+
   FILE *result;
   char canonic[MAXPATHLEN];
 
@@ -141,6 +165,8 @@ FILE *fopen(const char *pathname, const char *mode) {
 }
 
 int link(const char *oldpath, const char *newpath) {
+  call_once(initialized, initialize_watch);
+
   int result;
   char old_canonic[MAXPATHLEN], new_canonic[MAXPATHLEN];
 
@@ -153,6 +179,8 @@ int link(const char *oldpath, const char *newpath) {
 }
 
 int open(const char *pathname, int flags, ...) {
+  call_once(initialized, initialize_watch);
+
   /* Eventually, there is a third parameter: it's mode_t mode */
   va_list ap;
   mode_t mode;
@@ -171,6 +199,8 @@ int open(const char *pathname, int flags, ...) {
 }
 
 int rename(const char *oldpath, const char *newpath) {
+  call_once(initialized, initialize_watch);
+
   int result;
   char old_canonic[MAXPATHLEN], new_canonic[MAXPATHLEN];
 
@@ -184,6 +214,8 @@ int rename(const char *oldpath, const char *newpath) {
 }
 
 int symlink(const char *oldpath, const char *newpath) {
+  call_once(initialized, initialize_watch);
+
   int result;
   char old_canonic[MAXPATHLEN], new_canonic[MAXPATHLEN];
 
@@ -196,6 +228,8 @@ int symlink(const char *oldpath, const char *newpath) {
 }
 
 int creat64(const char *pathname, mode_t mode) {
+  call_once(initialized, initialize_watch);
+
   /* Is it a system call? */
   int result;
   char canonic[MAXPATHLEN];
@@ -209,6 +243,8 @@ int creat64(const char *pathname, mode_t mode) {
 }
 
 FILE *fopen64(const char *pathname, const char *mode) {
+  call_once(initialized, initialize_watch);
+
   FILE *result;
   char canonic[MAXPATHLEN];
 
@@ -224,6 +260,8 @@ FILE *fopen64(const char *pathname, const char *mode) {
 }
 
 int open64(const char *pathname, int flags, ...) {
+  call_once(initialized, initialize_watch);
+
   /* Eventually, there is a third parameter: it's mode_t mode */
   va_list ap;
   mode_t mode;
