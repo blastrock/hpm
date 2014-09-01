@@ -6,8 +6,14 @@ CXXFLAGS+=-D_GNU_SOURCE -DPIC -fPIC -D_REENTRANT -std=c++0x
 PREFIX=/usr/local
 DESTDIR=$(PREFIX)
 UNAME_S=$(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+	LIBNAME=libhpmwatch.dylib
+else
+	LIBNAME=libhpmwatch.so
+endif
 
-libhpmwatch.so: hpmwatch.o
+
+$(LIBNAME): hpmwatch.o
 ifeq ($(UNAME_S),Darwin)
 	g++ -std=c++0x -dynamiclib -o libhpmwatch.dylib hpmwatch.o
 else
@@ -16,25 +22,13 @@ endif
 
 .PHONY: clean
 clean:
-ifeq ($(UNAME_S),Darwin)
-	rm -f hpmwatch.o libhpmwatch.dylib
-else
-	rm -f hpmwatch.o libhpmwatch.so
-endif
+	rm -f hpmwatch.o $(LIBNAME)
 
 .PHONY: install
 install: libhpmwatch.so
-ifeq ($(UNAME_S),Darwin)
-	cp libhpmwatch.dylib $(DESTDIR)/lib
-else
-	cp libhpmwatch.so $(DESTDIR)/lib
-endif
+	cp $(LIBNAME) $(DESTDIR)/lib
 	cp hpm hpmwatch $(DESTDIR)/bin
 
 uninstall:
-ifeq ($(UNAME_S),Darwin)
-	rm $(DESTDIR)/lib/libhpmwatch.dylib
-else
-	rm $(DESTDIR)/lib/libhpmwatch.so
-endif
+	rm $(DESTDIR)/lib/$(LIBNAME)
 	rm -f $(DESTDIR)/bin/hpm $(DESTDIR)/bin/hpmwatch
