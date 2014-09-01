@@ -3,7 +3,15 @@
 
 set -e
 
-LIBHPM=$(dirname $0)/../lib/libhpmwatch.so
+LIBHPM=$(dirname "$0")/../lib/libhpmwatch.so
+
+if ! test -e "$LIBHPM"; then
+  LIBHPM=$(dirname "$0")/libhpmwatch.so
+  if ! test -e "$LIBHPM"; then
+    echo "Error: cannot find libhpmwatch.so"
+    exit 1
+  fi
+fi
 
 if test -z "$1" ; then
   echo "Syntax: $0 [-o outfile] <program> <arguments>"
