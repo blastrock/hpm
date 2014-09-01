@@ -7,7 +7,9 @@ Rationale
 
 Sometimes you want to install a package by hand, you may want the git version
 or you may want to compile it with different flags than your distro. What you
-do in such cases is something like::
+do in such cases is something like:
+
+.. code-block:: bash
 
     ./configure --prefix=$HOME/.local
     make
@@ -29,19 +31,25 @@ remove all of them in one command.
 Installation
 ------------
 
-You can install HPM through HPM itself with::
+You can install HPM through HPM itself with:
+
+.. code-block:: bash
 
     make
     ./hpm install hpm "make install PREFIX=$HOME/.local"
 
 And uninstall it later with:
 
+.. code-block:: bash
+
     hpm uninstall hpm
 
 Usage
 -----
 
-There are only two commands::
+There are only two commands:
+
+.. code-block:: bash
 
     hpm install <packagename> <command>
     hpm uninstall <packagename>
@@ -53,7 +61,9 @@ Example
 -------
 
 Let's say you want to install the last git version of LLVM in your home, you
-would do something like::
+would do something like:
+
+.. code-block:: bash
 
     mkdir build
     cd build
@@ -61,7 +71,9 @@ would do something like::
     make
     hpm install llvm 'make install'
 
-And then later, if you want to delete it::
+And then later, if you want to delete it:
+
+.. code-block:: bash
 
     hpm uninstall llvm
 
