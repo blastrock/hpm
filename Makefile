@@ -26,8 +26,9 @@ clean:
 
 .PHONY: install
 install: libhpmwatch.so
-	cp $(LIBNAME) $(DESTDIR)/lib
-	cp hpm hpmwatch $(DESTDIR)/bin
+	mkdir -p $(DESTDIR)/lib $(DESTDIR)/bin
+	cp $(LIBNAME) $(DESTDIR)/lib/
+	cp hpm hpmwatch $(DESTDIR)/bin/
 
 uninstall:
 	rm $(DESTDIR)/lib/$(LIBNAME)
