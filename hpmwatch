@@ -3,10 +3,10 @@
 
 set -e
 
-LIBHPM=$(dirname "$0")/../lib/libhpmwatch.so
+LIBHPM=`dirname "$0"`/../lib/libhpmwatch.so
 
 if ! test -e "$LIBHPM"; then
-  LIBHPM=$(dirname "$0")/libhpmwatch.so
+  LIBHPM=`dirname "$0"`/libhpmwatch.so
   if ! test -e "$LIBHPM"; then
     echo "Error: cannot find libhpmwatch.so"
     exit 1
@@ -19,14 +19,14 @@ if test -z "$1" ; then
 fi
 
 # Define realpath function for compatibility.
-function realpath() {
+realpath() {
   if [[ -d "$1" ]]; then
     pushd "$1" >/dev/null
     pwd
     popd >/dev/null
   elif [[ -e "$1" ]]; then
-    pushd $(dirname $1) >/dev/null
-    echo $(pwd)/$(basename $1)
+    pushd `dirname $1` >/dev/null
+    echo `pwd`/`basename $1`
     popd >/dev/null
   else
     echo $1 does not exist! >&2
@@ -44,7 +44,7 @@ if test "$1" = "-o" ; then
 
   # If $INSTALLWATCHFILE is a relative path, it must become
   # absolute
-  INSTALLWATCHFILE=$(readlink -f $INSTALLWATCHFILE)
+  INSTALLWATCHFILE=`readlink -f $INSTALLWATCHFILE`
 
   export INSTALLWATCHFILE
   if ! echo -n > "$INSTALLWATCHFILE" ; then
