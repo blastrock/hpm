@@ -103,6 +103,7 @@ int initialize_watch(void) {
     perror("cannot open logfile");
     exit(-1);
   }
+  return 0;
 }
 
 static int forceinit = initialize_watch();
